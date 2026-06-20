@@ -20,9 +20,13 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend:/app
 
   collector:
     build: ./backend
+    volumes:
+      - ./backend:/app
 
   frontend:
     build: ./frontend
