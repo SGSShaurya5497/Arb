@@ -10,3 +10,16 @@ yfinance
 celery[redis]
 pydantic-settings
 python-dotenv
+# --- Phase 4: Auth ---
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt<4.0.0
+email-validator
+python-multipart
+# --- Phase 4: Rate limiting ---
+slowapi
+# --- Phase 4: Testing ---
+pytest
+pytest-asyncio
+httpx
+fakeredis
