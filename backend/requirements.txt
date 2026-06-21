@@ -5,3 +5,7 @@ alembic
 psycopg2-binary
 redis
 numpy
+requests
+yfinance
+celery
+apscheduler
