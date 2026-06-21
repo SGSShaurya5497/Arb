@@ -129,7 +129,12 @@ def get_yf_price(symbol: str) -> float:
         For real-time prices, get_nse_price() is more accurate during trading.
     """
     ticker = yf.Ticker(symbol)
-    data = ticker.history(period="1d")
+    # period="1m" fetches 1-minute candles for the last few minutes.
+    # The most recent candle's Close price is the nearest we can get to
+    # a live price without a paid real-time feed.
+    # This is far better than period="1d" which only returns yesterday's close
+    # and never changes during the trading session.
+    data = ticker.history(period="1d", interval="1m")
     if data.empty:
         raise ValueError(f"No price data found for Yahoo Finance symbol: {symbol}")
     return float(data['Close'].iloc[-1])

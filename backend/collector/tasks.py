@@ -54,14 +54,14 @@ logger = logging.getLogger(__name__)
 ETF_REGISTRY = {
     "NIFTYBEES": {
         "yf_symbol": "NIFTYBEES.NS",   # .NS suffix = NSE-listed on Yahoo Finance
-        "mfapi_code": "118825",         # Nippon India ETF Nifty BeES scheme code
+        "mfapi_code": "140084",         # Nippon India ETF Nifty BeES scheme code
         "exchange": "NSE",
         "name": "Nippon India ETF Nifty BeES",
         "asset_type": "ETF",
     },
     "JUNIORBEES": {
         "yf_symbol": "JUNIORBEES.NS",
-        "mfapi_code": "118989",         # Nippon India ETF Junior BeES
+        "mfapi_code": "140085",         # Nippon India ETF Junior BeES
         "exchange": "NSE",
         "name": "Nippon India ETF Junior BeES",
         "asset_type": "ETF",
