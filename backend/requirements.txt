@@ -7,5 +7,6 @@ redis
 numpy
 requests
 yfinance
-celery
-apscheduler
+celery[redis]
+pydantic-settings
+python-dotenv

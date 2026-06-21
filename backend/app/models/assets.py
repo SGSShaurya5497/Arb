@@ -8,7 +8,7 @@ class Asset(Base):
     __tablename__ = "assets"
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     symbol=Column(String(255), unique=True, nullable=False)
-    name=Column(String(20), unique=True, nullable=False)
-    asset_type=Column(String(20), nullable=False)
-    exchange_primary=Column(String(20), nullable=False)
-    exchange_secondary=Column(String(20), nullable=True)
+    name=Column(String(200), unique=True, nullable=False)
+    asset_type=Column(String(200), nullable=False)
+    exchange_primary=Column(String(200), nullable=False)
+    exchange_secondary=Column(String(200), nullable=True)

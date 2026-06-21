@@ -22,11 +22,51 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://arb_user:arb_password@postgres:5432/arb
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 
-  collector:
+  # Celery Worker — executes tasks that Beat schedules.
+  # -A collector.celery_app  → load the Celery app object from this module
+  # worker                   → run in worker mode (consumes from queue)
+  # --loglevel=info          → print task start/success/failure to stdout
+  celery_worker:
     build: ./backend
+    command: celery -A collector.celery_app worker --loglevel=info
     volumes:
       - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://arb_user:arb_password@postgres:5432/arb
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  # Celery Beat — the periodic task scheduler.
+  # Beat does NOT run tasks — it only publishes task messages to Redis every
+  # N seconds. The worker container picks those up and executes them.
+  # --scheduler django_celery_beat... is NOT used here — we use the default
+  # in-memory scheduler since our schedule is defined in celery_app.py.
+  celery_beat:
+    build: ./backend
+    command: celery -A collector.celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://arb_user:arb_password@postgres:5432/arb
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 
   frontend:
     build: ./frontend
