@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # Which origins may call the API from a browser.
     # Pydantic-settings parses this as a JSON array from the env var, e.g.:
     #   CORS_ORIGINS='["http://localhost:5173","https://arb.example.com"]'
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
 
     class Config:
         env_file = ".env"

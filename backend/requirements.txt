@@ -10,6 +10,7 @@ yfinance
 celery[redis]
 pydantic-settings
 python-dotenv
+pytz
 # --- Phase 4: Auth ---
 python-jose[cryptography]
 passlib[bcrypt]

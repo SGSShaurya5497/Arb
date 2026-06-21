@@ -21,7 +21,13 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.api import alerts, auth, spreads, ws
 from app.api.spreads import limiter   # single shared Limiter instance
 from app.core.config import settings
-from app.core.database import engine
+from app.core.database import engine, SessionLocal
+from app.models.assets import Asset
+
+# ETF_REGISTRY is the single source of truth for tracked instruments.
+# We import it here to seed the DB on startup — this way the SpreadTable
+# shows all instruments immediately, even before the collector has run.
+from collector.tasks import ETF_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +82,38 @@ app.include_router(ws.router)   # WebSocket: /ws/spreads
 # It runs for the lifetime of the process — one reader, N clients.
 # On shutdown, FastAPI cancels all background tasks automatically.
 # ---------------------------------------------------------------------------
+@app.on_event("startup")
+async def seed_assets():
+    """
+    Ensures every ETF in ETF_REGISTRY has a row in the assets table.
+
+    Why on startup and not in the collector?
+    The collector is gated by market hours — it won't run on weekends or
+    after hours. If a new ETF is added to ETF_REGISTRY, it would never
+    appear in the SpreadTable until the market opens. Seeding here means
+    assets appear immediately (with latest_spread=None) as soon as the
+    backend restarts, regardless of market hours.
+
+    This is idempotent — querying before inserting makes it safe to run
+    on every restart without creating duplicate rows.
+    """
+    db = SessionLocal()
+    try:
+        for symbol, meta in ETF_REGISTRY.items():
+            exists = db.query(Asset).filter(Asset.symbol == symbol).first()
+            if not exists:
+                db.add(Asset(
+                    symbol=symbol,
+                    name=meta["name"],
+                    asset_type=meta["asset_type"],
+                    exchange_primary=meta["exchange"],
+                ))
+                logger.info(f"[startup] Seeded asset: {symbol}")
+        db.commit()
+    finally:
+        db.close()
+
+
 @app.on_event("startup")
 async def start_redis_reader():
     """Starts the WebSocket Redis stream reader as a background coroutine."""
