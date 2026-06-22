@@ -27,6 +27,11 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      # JWT — swap this with a real secret in staging/prod
+      # Generate with: openssl rand -hex 32
+      - JWT_SECRET_KEY=dev_secret_change_in_production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
     depends_on:
       - postgres
       - redis
