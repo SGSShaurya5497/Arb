@@ -16,6 +16,7 @@ That gap is called the **spread**, and it's a real, exploitable arbitrage signal
 
 ## Live Dashboard
 
+
 The frontend is a trading terminal UI (inspired by Bloomberg/TradingView):
 
 - **SpreadTable** — dense sortable table of all tracked ETFs with live color-coded Z-scores. Rows flash when a live update arrives.

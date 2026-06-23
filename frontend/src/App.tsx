@@ -8,6 +8,7 @@ import { LoginPanel } from './components/LoginPanel';
 import { AlertsPanel } from './components/AlertsPanel';
 import { MarketStrip } from './components/MarketStrip';
 import { NewsPanel } from './components/NewsPanel';
+import { NiftyChart } from './components/NiftyChart';
 import './index.css';
 
 // ─── Clock hook ───────────────────────────────────────────────────────────────
@@ -41,17 +42,14 @@ export default function App() {
   const [selectedAsset, setSelected]  = useState<{ id: string; symbol: string } | null>(null);
   const [rightPanel, setRightPanel]   = useState<RightPanel>('chart');
   const clock                         = useClock();
-  const _tick                         = useTimestampTick(); // triggers re-renders for "Xs ago" labels
+  const _tick                         = useTimestampTick();
 
   const { rows, wsStatus, liveFeedEvents, isLoading, error, fetchHistory, setAuthToken }
     = useSpreads();
 
-  // ── Sparkline rolling buffers (persists across SpreadTable re-renders) ──
   const sparklines = useSparklineBuffer(rows);
 
-  // ── 401 auto-logout ─────────────────────────────────────────────────────
-  // When a token expires, apiFetch throws 'Unauthorized'. We surface that here
-  // so the app snaps back to the login screen instead of silently breaking.
+  // ── 401 auto-logout ──────────────────────────────────────────────────────
   useEffect(() => {
     if (error === 'Unauthorized') {
       handleLogout();
@@ -72,31 +70,31 @@ export default function App() {
 
   const handleSelectAsset = useCallback((id: string, symbol: string) => {
     setSelected(prev => prev?.id === id ? null : { id, symbol });
-    setRightPanel('chart'); // clicking a row always opens chart first
+    setRightPanel('chart');
   }, []);
 
-  // ── Unauthenticated ────────────────────────────────────────────────────────
+  // ── Unauthenticated ───────────────────────────────────────────────────────
   if (!authed) return <LoginPanel onLogin={handleLogin} />;
 
   const hasRightPanel = selectedAsset || rightPanel === 'alerts' || rightPanel === 'news';
 
-  // ── Main terminal layout ───────────────────────────────────────────────────
+  // ── Main terminal layout ──────────────────────────────────────────────────
   return (
     <div
-      className="h-screen w-screen flex flex-col bg-surface overflow-hidden"
+      className="flex flex-col w-screen h-screen overflow-hidden bg-surface"
       style={{ fontFamily: 'system-ui, Segoe UI, sans-serif' }}
     >
-      {/* ── Market Overview Strip ───────────────────────────────────────── */}
+      {/* ── Market Overview Strip ─────────────────────────────────────────── */}
       <MarketStrip />
 
-      {/* ── Top chrome bar ──────────────────────────────────────────────── */}
+      {/* ── Top chrome bar ────────────────────────────────────────────────── */}
       <header className="flex items-center px-4 border-b border-border bg-panel"
               style={{ height: 36, flexShrink: 0 }}>
-        <span className="data text-xs text-text font-semibold tracking-widest mr-4">
+        <span className="mr-4 text-xs font-semibold tracking-widest data text-text">
           ARB
         </span>
         <span className="text-border mx-1.5">│</span>
-        <span className="font-sans text-xs text-muted uppercase tracking-widest">
+        <span className="font-sans text-xs tracking-widest uppercase text-muted">
           Real-time Arbitrage Monitor
         </span>
 
@@ -134,7 +132,7 @@ export default function App() {
           </button>
         </div>
 
-        <span className="ml-auto flex items-center gap-4">
+        <span className="flex items-center gap-4 ml-auto">
           {/* WS status */}
           <span className="flex items-center gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full ${
@@ -148,11 +146,11 @@ export default function App() {
           </span>
 
           {/* Clock */}
-          <span className="data text-xs text-muted">{clock} IST</span>
+          <span className="text-xs data text-muted">{clock} IST</span>
 
           {/* Logout */}
           <button
-            className="font-sans text-2xs text-muted hover:text-flux-neg uppercase tracking-widest"
+            className="font-sans tracking-widest uppercase text-2xs text-muted hover:text-flux-neg"
             onClick={handleLogout}
           >
             Disconnect
@@ -160,50 +158,67 @@ export default function App() {
         </span>
       </header>
 
-      {/* ── Main grid ───────────────────────────────────────────────────── */}
+      {/* ── Main grid ─────────────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 gap-0">
 
-        {/* Left: SpreadTable */}
+        {/* ── Left column: SpreadTable + Nifty Chart ────────────────────── */}
         <div
           className="flex flex-col border-r border-border"
           style={{ width: hasRightPanel ? '52%' : '100%', flexShrink: 0 }}
         >
-          <div className="panel-header">
-            <span className={`dot ${wsStatus !== 'connected' ? 'offline' : ''}`} />
-            SPREAD MONITOR
-            <span className="ml-auto data text-2xs text-muted">
-              {rows.length} instruments
-            </span>
-            {isLoading && (
-              <span className="data text-2xs text-muted ml-2">loading…</span>
+          {/* SpreadTable — scrollable, takes remaining space */}
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="panel-header">
+              <span className={`dot ${wsStatus !== 'connected' ? 'offline' : ''}`} />
+              SPREAD MONITOR
+              <span className="ml-auto data text-2xs text-muted">
+                {rows.length} instruments
+              </span>
+              {isLoading && (
+                <span className="ml-2 data text-2xs text-muted">loading…</span>
+              )}
+            </div>
+
+            {error && error !== 'Unauthorized' && (
+              <div className="px-3 py-2 text-xs border-b border-border data text-flux-neg">
+                ⚠ {error}
+              </div>
             )}
+
+            <div className="flex-1 min-h-0 overflow-auto">
+              <SpreadTable
+                rows={rows}
+                onSelectAsset={handleSelectAsset}
+                selectedAssetId={selectedAsset?.id ?? null}
+                sparklines={sparklines}
+                tick={_tick}
+              />
+            </div>
           </div>
 
-          {error && error !== 'Unauthorized' && (
-            <div className="px-3 py-2 border-b border-border data text-xs text-flux-neg">
-              ⚠ {error}
+          {/* Nifty Chart — fixed height below SpreadTable */}
+          <div className="border-t border-border" style={{ height: 300, flexShrink: 0 }}>
+            <div className="border-b panel-header border-border">
+              <span className="dot" style={{ background: '#22C55E' }} />
+              NIFTY 50
+              <span className="ml-auto data text-2xs text-muted">
+                NSE:NIFTY50 · LIVE
+              </span>
             </div>
-          )}
-
-          {/* Pass tick (not key) so SpreadTable re-renders timestamps in-place
-              without remounting — preserves sort state and sparkline buffer refs */}
-          <SpreadTable
-            rows={rows}
-            onSelectAsset={handleSelectAsset}
-            selectedAssetId={selectedAsset?.id ?? null}
-            sparklines={sparklines}
-            tick={_tick}
-          />
+            <div style={{ height: 'calc(100% - 28px)' }}>
+              <NiftyChart />
+            </div>
+          </div>
         </div>
 
-        {/* Right: Chart + Feed  OR  Alerts */}
+        {/* ── Right column: Chart / Alerts / News ───────────────────────── */}
         {hasRightPanel && (
           <div className="flex flex-col flex-1 min-w-0 min-h-0">
 
             {rightPanel === 'alerts' ? (
-              // ── Alerts panel ─────────────────────────────────────────────
+              // ── Alerts panel ───────────────────────────────────────────
               <>
-                <div className="panel-header border-b border-border">
+                <div className="border-b panel-header border-border">
                   <span className="dot" style={{ background: '#F59E0B' }} />
                   ACTIVE ALERTS
                   <span className="ml-auto data text-2xs text-muted">
@@ -217,10 +232,11 @@ export default function App() {
                   />
                 </div>
               </>
+
             ) : rightPanel === 'news' ? (
               // ── News panel ─────────────────────────────────────────────
               <>
-                <div className="panel-header border-b border-border">
+                <div className="border-b panel-header border-border">
                   <span className="dot" style={{ background: '#60A5FA' }} />
                   MARKETS NEWS
                   <span className="ml-auto data text-2xs text-muted">
@@ -231,14 +247,17 @@ export default function App() {
                   <NewsPanel />
                 </div>
               </>
+
             ) : selectedAsset ? (
-              // ── Chart + Feed split ────────────────────────────────────────
+              // ── BasisChart + LiveFeed split ────────────────────────────
               <>
                 {/* BasisChart — top 60% */}
-                <div className="panel-header border-b border-border">
+                <div className="border-b panel-header border-border">
                   <span className="dot" style={{ background: '#E8A027' }} />
                   BASIS CHART
-                  <span className="ml-auto data text-2xs text-muted">30d spread history</span>
+                  <span className="ml-auto data text-2xs text-muted">
+                    30d spread history
+                  </span>
                 </div>
                 <div style={{ flex: '0 0 60%', minHeight: 0 }}>
                   <BasisChart
@@ -250,7 +269,7 @@ export default function App() {
 
                 {/* LiveFeed — bottom 40% */}
                 <div style={{ flex: '0 0 40%', minHeight: 0, display: 'flex', flexDirection: 'column', borderTop: '1px solid #252529' }}>
-                  <div className="panel-header border-b border-border">
+                  <div className="border-b panel-header border-border">
                     <span className={`dot ${wsStatus !== 'connected' ? 'offline' : ''}`} />
                     LIVE FEED
                   </div>
@@ -259,12 +278,13 @@ export default function App() {
                   </div>
                 </div>
               </>
+
             ) : null}
           </div>
         )}
       </div>
 
-      {/* ── Status bar ──────────────────────────────────────────────────── */}
+      {/* ── Status bar ────────────────────────────────────────────────────── */}
       <footer className="flex items-center px-4 border-t border-border bg-panel"
               style={{ height: 24, flexShrink: 0 }}>
         <span className="data text-2xs text-muted">

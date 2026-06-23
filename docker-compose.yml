@@ -73,10 +73,26 @@ services:
       - postgres
       - redis
 
+  # Frontend — Vite dev server with hot-module-reload.
+  # src/ is bind-mounted so changes on the host are reflected instantly.
+  # node_modules lives inside the image (not mounted) to avoid host/container
+  # platform conflicts on Windows/macOS.
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
+    volumes:
+      # Bind-mount source tree for hot-reload (excludes node_modules via the
+      # anonymous volume trick below)
+      - ./frontend:/app
+      # Anonymous volume keeps the container's node_modules intact even though
+      # the parent directory is mounted from the host
+      - /app/node_modules
+    environment:
+      # Tells vite.config.ts to proxy API/WS calls to the backend service
+      - BACKEND_HOST=backend
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
