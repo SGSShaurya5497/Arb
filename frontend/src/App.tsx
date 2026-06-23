@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSpreads } from './hooks/useSpreads';
 import { useSparklineBuffer } from './hooks/useSparklineBuffer';
 import { SpreadTable } from './components/SpreadTable';
@@ -48,6 +48,35 @@ export default function App() {
     = useSpreads();
 
   const sparklines = useSparklineBuffer(rows);
+
+  // ── Nifty chart drag-to-resize ────────────────────────────────────────────
+  const [niftyHeight, setNiftyHeight] = useState(280);
+  const isDragging   = useRef(false);
+  const dragStartY   = useRef(0);
+  const dragStartH   = useRef(0);
+
+  const onDragHandleDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current  = true;
+    dragStartY.current  = e.clientY;
+    dragStartH.current  = niftyHeight;
+    e.preventDefault();
+  }, [niftyHeight]);
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!isDragging.current) return;
+      // Dragging UP (negative delta) → bigger chart
+      const delta = dragStartY.current - e.clientY;
+      setNiftyHeight(Math.max(120, Math.min(560, dragStartH.current + delta)));
+    }
+    function onUp() { isDragging.current = false; }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+    };
+  }, []);
 
   // ── 401 auto-logout ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -196,16 +225,40 @@ export default function App() {
             </div>
           </div>
 
-          {/* Nifty Chart — fixed height below SpreadTable */}
-          <div className="border-t border-border" style={{ height: 300, flexShrink: 0 }}>
-            <div className="border-b panel-header border-border">
+          {/* ── Drag handle — grab to resize Nifty chart ──────────────── */}
+          <div
+            onMouseDown={onDragHandleDown}
+            title="Drag to resize"
+            style={{
+              height:      8,
+              flexShrink:  0,
+              cursor:      'ns-resize',
+              background:  'transparent',
+              borderTop:   '1px solid #252529',
+              display:     'flex',
+              alignItems:  'center',
+              justifyContent: 'center',
+              userSelect:  'none',
+            }}
+          >
+            {/* Grip indicator — 3 horizontal dots */}
+            <div style={{ display: 'flex', gap: 3 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 14, height: 1.5, background: '#3a3a42', borderRadius: 1 }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Nifty Chart — height controlled by drag */}
+          <div style={{ height: niftyHeight, flexShrink: 0 }}>
+            <div className="panel-header" style={{ borderTop: 'none' }}>
               <span className="dot" style={{ background: '#22C55E' }} />
               NIFTY 50
               <span className="ml-auto data text-2xs text-muted">
-                NSE:NIFTY50 · LIVE
+                ^NSEI · 5m · auto-refresh
               </span>
             </div>
-            <div style={{ height: 'calc(100% - 28px)' }}>
+            <div style={{ height: `calc(100% - 29px)` }}>
               <NiftyChart />
             </div>
           </div>

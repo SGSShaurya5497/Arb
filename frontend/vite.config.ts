@@ -31,6 +31,20 @@ export default defineConfig({
         ws: true,
         changeOrigin: true,
       },
+      // Yahoo Finance proxy — routes NiftyChart fetches through the Node server
+      // so there are no browser CORS restrictions. The Node process has full
+      // internet access and can set a proper User-Agent header.
+      '/yf': {
+        target: 'https://query1.finance.yahoo.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path: string) => path.replace(/^\/yf/, ''),
+        headers: {
+          // Yahoo Finance requires a browser-like User-Agent or it returns 429
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+          'Accept': 'application/json',
+        },
+      },
     },
   },
 })
