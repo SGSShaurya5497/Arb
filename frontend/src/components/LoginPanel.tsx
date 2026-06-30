@@ -17,7 +17,6 @@ export function LoginPanel({ onLogin }: Props) {
     setError(null);
     try {
       if (isRegister) {
-        // Register first
         const regRes = await fetch('/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -29,7 +28,6 @@ export function LoginPanel({ onLogin }: Props) {
         }
       }
 
-      // Login (either after register, or directly)
       const form = new URLSearchParams({ username: email, password });
       const res = await fetch('/auth/token', {
         method: 'POST',
@@ -49,34 +47,110 @@ export function LoginPanel({ onLogin }: Props) {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    fontFamily: 'JetBrains Mono, monospace',
+    fontSize: '0.8125rem',
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid #252529',
+    color: '#E8E8EC',
+    padding: '10px 12px',
+    borderRadius: 6,
+    outline: 'none',
+    width: '100%',
+    transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-surface">
-      <div className="panel w-full max-w-sm">
-        <div className="panel-header">
-          <span className="dot" />
-          ARB TERMINAL — AUTHENTICATION
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      background: 'radial-gradient(ellipse 80% 60% at 50% 40%, #0a0a18 0%, #080810 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Ambient glow blobs */}
+      <div style={{
+        position: 'absolute', width: 500, height: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(59,130,246,0.04) 0%, transparent 70%)',
+        top: '10%', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', width: 300, height: 300, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(34,197,94,0.03) 0%, transparent 70%)',
+        bottom: '20%', right: '20%', pointerEvents: 'none',
+      }} />
+
+      {/* Card */}
+      <div className="glass-card" style={{ width: '100%', maxWidth: 380, borderRadius: 12, overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{
+          padding: '24px 24px 20px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          background: 'linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(13,13,15,0) 60%)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: 'linear-gradient(135deg, #3B82F6 0%, #1d4ed8 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(59,130,246,0.35)',
+            }}>
+              <span style={{ fontFamily: 'JetBrains Mono', fontSize: 14, fontWeight: 700, color: '#fff' }}>A</span>
+            </div>
+            <div>
+              <div style={{
+                fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                background: 'linear-gradient(135deg, #E8E8EC 0%, #9090a0 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>
+                ARB Terminal
+              </div>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', color: '#3a3a42', letterSpacing: '0.06em', marginTop: 1 }}>
+                Real-time Arbitrage Monitor
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex border-b border-border">
-          <button
-            onClick={() => { setIsRegister(false); setError(null); }}
-            className={`flex-1 py-2 text-xs font-sans tracking-widest uppercase ${!isRegister ? 'bg-[rgba(255,255,255,0.04)] text-text' : 'text-muted hover:text-text'}`}
-          >
-            Connect
-          </button>
-          <div className="w-[1px] bg-border" />
-          <button
-            onClick={() => { setIsRegister(true); setError(null); }}
-            className={`flex-1 py-2 text-xs font-sans tracking-widest uppercase ${isRegister ? 'bg-[rgba(255,255,255,0.04)] text-text' : 'text-muted hover:text-text'}`}
-          >
-            Register
-          </button>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          {[
+            { label: 'Sign In', value: false },
+            { label: 'Register', value: true },
+          ].map(tab => (
+            <button
+              key={String(tab.value)}
+              onClick={() => { setIsRegister(tab.value); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '10px 0',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '0.72rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                border: 'none',
+                background: isRegister === tab.value ? 'rgba(59,130,246,0.08)' : 'transparent',
+                color: isRegister === tab.value ? '#3B82F6' : '#5A5A65',
+                cursor: 'pointer',
+                borderBottom: isRegister === tab.value ? '2px solid #3B82F6' : '2px solid transparent',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-muted text-xs uppercase tracking-widest font-sans">
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', color: '#5A5A65', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
               Email
             </label>
             <input
@@ -84,14 +158,21 @@ export function LoginPanel({ onLogin }: Props) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="data text-sm bg-surface border border-border text-text px-3 py-2 outline-none focus:border-muted"
-              style={{ borderRadius: 2 }}
+              style={inputStyle}
               placeholder="user@example.com"
+              onFocus={e => {
+                e.target.style.borderColor = '#3B82F6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)';
+              }}
+              onBlur={e => {
+                e.target.style.borderColor = '#252529';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-muted text-xs uppercase tracking-widest font-sans">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', color: '#5A5A65', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
               Password
             </label>
             <input
@@ -99,14 +180,28 @@ export function LoginPanel({ onLogin }: Props) {
               value={password}
               onChange={e => setPass(e.target.value)}
               required
-              className="data text-sm bg-surface border border-border text-text px-3 py-2 outline-none focus:border-muted"
-              style={{ borderRadius: 2 }}
+              style={inputStyle}
+              onFocus={e => {
+                e.target.style.borderColor = '#3B82F6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)';
+              }}
+              onBlur={e => {
+                e.target.style.borderColor = '#252529';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
           {error && (
-            <div className="data text-xs text-flux-neg border border-flux-neg/30 px-3 py-2"
-                 style={{ borderRadius: 2 }}>
+            <div style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '0.7rem',
+              color: '#EF4444',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              padding: '8px 12px',
+              borderRadius: 6,
+            }}>
               {error}
             </div>
           )}
@@ -114,10 +209,32 @@ export function LoginPanel({ onLogin }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="data text-sm border border-text text-text px-4 py-2 hover:bg-text hover:text-surface transition-colors disabled:opacity-40 mt-2"
-            style={{ borderRadius: 2 }}
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              padding: '12px',
+              borderRadius: 8,
+              border: 'none',
+              background: loading
+                ? 'rgba(59,130,246,0.3)'
+                : 'linear-gradient(135deg, #3B82F6 0%, #2563eb 100%)',
+              color: loading ? 'rgba(255,255,255,0.4)' : '#fff',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: loading ? 'none' : '0 4px 14px rgba(59,130,246,0.3)',
+              transition: 'all 0.15s ease',
+              marginTop: 4,
+            }}
+            onMouseEnter={e => {
+              if (!loading) e.currentTarget.style.boxShadow = '0 6px 20px rgba(59,130,246,0.45)';
+            }}
+            onMouseLeave={e => {
+              if (!loading) e.currentTarget.style.boxShadow = '0 4px 14px rgba(59,130,246,0.3)';
+            }}
           >
-            {loading ? 'AUTHENTICATING…' : isRegister ? 'CREATE ACCOUNT & CONNECT' : 'CONNECT'}
+            {loading ? 'Authenticating…' : isRegister ? 'Create Account & Connect' : 'Connect'}
           </button>
         </form>
       </div>

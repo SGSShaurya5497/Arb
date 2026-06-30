@@ -29,11 +29,18 @@ function fmtZ(v: string): string {
   return (n >= 0 ? '+' : '') + n.toFixed(3);
 }
 
-function zColor(v: string): string {
+function zBarColor(v: string): string {
   const abs = Math.abs(parseFloat(v));
-  if (abs > 3) return parseFloat(v) > 0 ? 'text-flux-pos' : 'text-flux-neg';
-  if (abs > 2) return 'text-amber';
-  return 'text-muted';
+  if (abs > 3) return parseFloat(v) > 0 ? '#22C55E' : '#EF4444';
+  if (abs > 2) return '#F59E0B';
+  return '#3a3a42';
+}
+
+function zTextColor(v: string): string {
+  const abs = Math.abs(parseFloat(v));
+  if (abs > 3) return parseFloat(v) > 0 ? '#22C55E' : '#EF4444';
+  if (abs > 2) return '#F59E0B';
+  return '#5A5A65';
 }
 
 function relTime(iso: string): string {
@@ -52,9 +59,8 @@ interface Props {
 export function AlertsPanel({ authToken, onAuthExpired }: Props) {
   const [alerts, setAlerts]   = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tick, setTick]       = useState(0); // force re-render for relative times
+  const [tick, setTick]       = useState(0);
 
-  // Refresh relative timestamps every 5s
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 5000);
     return () => clearInterval(id);
@@ -74,7 +80,6 @@ export function AlertsPanel({ authToken, onAuthExpired }: Props) {
     }
   }, [authToken, onAuthExpired]);
 
-  // Poll every 30s so the panel stays fresh
   useEffect(() => {
     fetchAlerts();
     const id = setInterval(fetchAlerts, 30_000);
@@ -82,49 +87,112 @@ export function AlertsPanel({ authToken, onAuthExpired }: Props) {
   }, [fetchAlerts]);
 
   return (
-    <div className="h-full overflow-auto">
+    <div style={{ height: '100%', overflowY: 'auto' }}>
       {loading && (
-        <div className="flex items-center justify-center h-20 text-muted text-xs">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 80, fontFamily: 'JetBrains Mono', fontSize: '0.7rem', color: '#3a3a42', letterSpacing: '0.08em' }}>
           Loading…
         </div>
       )}
       {!loading && alerts.length === 0 && (
-        <div className="flex items-center justify-center h-20 text-muted text-xs">
-          No active alerts — all z-scores within threshold
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50%', gap: 8 }}>
+          <div style={{ fontSize: '1.5rem' }}>✓</div>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#3a3a42' }}>
+            No active alerts
+          </span>
+          <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.6rem', color: '#252529', letterSpacing: '0.06em' }}>
+            All z-scores within threshold
+          </span>
         </div>
       )}
       {alerts.map((a, i) => {
-        const absZ = Math.abs(parseFloat(a.z_score));
-        const isExtreme = absZ > 3;
+        const barColor  = zBarColor(a.z_score);
+        const textColor = zTextColor(a.z_score);
+        const bpsN      = parseFloat(a.spread_bps);
+        const absZ      = Math.abs(parseFloat(a.z_score));
+
         return (
           <div
             key={`${a.id}-${i}`}
-            className="flex items-center gap-3 px-3 py-[5px] border-b border-[#1a1a1e]"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 14px',
+              borderBottom: '1px solid #111115',
+              transition: 'background 0.15s ease',
+              cursor: 'default',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
-            {/* Severity indicator bar */}
-            <div className={`w-0.5 self-stretch shrink-0 ${
-              isExtreme ? (parseFloat(a.z_score) > 0 ? 'bg-flux-pos' : 'bg-flux-neg') : 'bg-amber'
-            }`} />
+            {/* Severity bar */}
+            <div style={{
+              width: 3,
+              alignSelf: 'stretch',
+              flexShrink: 0,
+              borderRadius: 2,
+              background: barColor,
+              boxShadow: absZ > 3 ? `0 0 6px ${barColor}60` : 'none',
+            }} />
 
             {/* Symbol */}
-            <span className="data text-xs text-text font-medium w-[90px] shrink-0">
+            <span style={{
+              fontFamily: 'JetBrains Mono',
+              fontSize: '0.75rem',
+              color: '#E8E8EC',
+              fontWeight: 500,
+              width: 100,
+              flexShrink: 0,
+              letterSpacing: '0.04em',
+            }}>
               {a.symbol}
             </span>
 
             {/* Z-Score */}
-            <span className={`data text-sm font-semibold ${zColor(a.z_score)}`}>
+            <span style={{
+              fontFamily: 'JetBrains Mono',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: textColor,
+              letterSpacing: '-0.02em',
+            }}>
               {fmtZ(a.z_score)}σ
             </span>
 
             {/* Spread */}
-            <span className={`data text-xs ml-2 ${
-              parseFloat(a.spread_bps) > 0 ? 'text-flux-pos' : 'text-flux-neg'
-            }`}>
+            <span style={{
+              fontFamily: 'JetBrains Mono',
+              fontSize: '0.72rem',
+              color: bpsN > 0 ? '#22C55E' : '#EF4444',
+              marginLeft: 4,
+            }}>
               {fmtBps(a.spread_bps)} bps
             </span>
 
-            {/* Time — updates via tick */}
-            <span className="data text-2xs text-muted ml-auto" key={tick}>
+            {/* Type badge */}
+            {a.spread_type && (
+              <span style={{
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '0.58rem',
+                color: '#3a3a42',
+                border: '1px solid #1e1e24',
+                padding: '1px 5px',
+                borderRadius: 3,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}>
+                {a.spread_type}
+              </span>
+            )}
+
+            {/* Time */}
+            <span style={{
+              fontFamily: 'JetBrains Mono',
+              fontSize: '0.6rem',
+              color: '#3a3a42',
+              marginLeft: 'auto',
+              letterSpacing: '0.04em',
+            }} key={tick}>
               {relTime(a.captured_at)}
             </span>
           </div>

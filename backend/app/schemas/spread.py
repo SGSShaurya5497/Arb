@@ -113,3 +113,6 @@ class AlertRead(BaseModel):
         return abs(float(self.z_score))
 
     model_config = {"from_attributes": True}
+
+
+    

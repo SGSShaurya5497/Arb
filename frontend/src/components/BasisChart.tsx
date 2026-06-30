@@ -35,9 +35,15 @@ function TerminalTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-panel border border-border px-3 py-2 text-xs data shadow-none">
-      <div className="text-muted mb-1 font-sans">{label}</div>
-      <div className="text-text">{fmtBps(payload[0].value)}</div>
+    <div style={{
+      background: '#0D0D0F',
+      border: '1px solid rgba(232,160,39,0.3)',
+      borderRadius: 6,
+      padding: '6px 11px',
+      boxShadow: '0 0 12px rgba(232,160,39,0.12)',
+    }}>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: '#5A5A65', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: '#E8E8EC', fontWeight: 600 }}>{fmtBps(payload[0].value)}</div>
     </div>
   );
 }
@@ -76,22 +82,26 @@ export function BasisChart({ assetId, symbol, fetchHistory }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Sub-header: days selector */}
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-border">
-        <span className="text-muted text-xs font-sans uppercase tracking-widest">
-          {symbol} / 30d basis
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 14px', borderBottom: '1px solid #1a1a1e', background: 'linear-gradient(90deg, #0D0D0F 0%, #111115 100%)' }}>
+        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', color: '#5A5A65', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>
+          {symbol} <span style={{ color: '#3a3a42' }}>/ basis</span>
         </span>
-        <div className="ml-auto flex gap-1">
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
           {[7, 14, 30].map(d => (
             <button
               key={d}
               onClick={() => setDays(d)}
-              className={[
-                'data text-xs px-2 py-0.5 border',
-                days === d
-                  ? 'border-text text-text bg-transparent'
-                  : 'border-border text-muted hover:text-text hover:border-muted',
-              ].join(' ')}
-              style={{ borderRadius: 2 }}
+              style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '0.65rem',
+                padding: '2px 8px',
+                borderRadius: 4,
+                border: days === d ? '1px solid #5A5A65' : '1px solid #252529',
+                background: days === d ? '#252529' : 'transparent',
+                color: days === d ? '#E8E8EC' : '#5A5A65',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
             >
               {d}D
             </button>
@@ -194,3 +204,7 @@ export function BasisChart({ assetId, symbol, fetchHistory }: Props) {
     </div>
   );
 }
+
+
+
+

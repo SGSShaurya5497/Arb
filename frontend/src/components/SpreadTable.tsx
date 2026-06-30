@@ -27,32 +27,31 @@ type SortKey = 'symbol' | 'assetType' | 'exchange' | 'spreadBps' | 'zScore' | 'c
 type SortDir = 'asc' | 'desc';
 
 // ─── Z-Score cell colors ─────────────────────────────────────────────────────
-const TIER_STYLES: Record<string, string> = {
-  'strong-pos': 'text-flux-pos font-semibold',
-  'strong-neg': 'text-flux-neg font-semibold',
-  'warning':    'text-amber',
-  'neutral':    'text-text',
+const TIER_STYLES: Record<string, React.CSSProperties> = {
+  'strong-pos': { color: '#22C55E', fontWeight: 600 },
+  'strong-neg': { color: '#EF4444', fontWeight: 600 },
+  'warning':    { color: '#F59E0B' },
+  'neutral':    { color: '#E8E8EC' },
 };
 
 // ─── Sort indicator ───────────────────────────────────────────────────────────
 function SortArrow({ active, dir }: { active: boolean; dir: SortDir }) {
-  if (!active) return <span className="text-border ml-1">⇅</span>;
-  return <span className="text-text ml-1">{dir === 'asc' ? '↑' : '↓'}</span>;
+  if (!active) return <span style={{ color: '#252529', marginLeft: 4, fontSize: '0.6rem' }}>⇅</span>;
+  return <span style={{ color: '#5A5A65', marginLeft: 4, fontSize: '0.6rem' }}>{dir === 'asc' ? '↑' : '↓'}</span>;
 }
 
 interface Props {
   rows:            SpreadTableRow[];
   onSelectAsset:   (assetId: string, symbol: string) => void;
   selectedAssetId: string | null;
-  sparklines:      Map<string, number[]>;  // assetId → rolling buffer
-  tick:            number;                 // forces timestamp recompute without remounting
+  sparklines:      Map<string, number[]>;
+  tick:            number;
 }
 
 export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, tick }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('symbol');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  // tick is read here so React sees it as a used dep and re-renders the component
   void tick;
 
   function handleSort(key: SortKey) {
@@ -95,12 +94,11 @@ export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, 
   }
 
   return (
-    <div className="h-full overflow-auto">
+    <div style={{ height: '100%', overflowY: 'auto', overflowX: 'auto' }}>
       <table>
-        <thead className="sticky top-0 bg-panel z-10">
+        <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
           <tr>
             {col('symbol',    'Symbol')}
-            {/* Sparkline column — no sort, fixed width */}
             <th style={{ width: 96 }}>Trend</th>
             {col('assetType', 'Type')}
             {col('exchange',  'Exchange')}
@@ -112,7 +110,7 @@ export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, 
         <tbody>
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={7} className="text-center text-muted py-8">
+              <td colSpan={7} style={{ textAlign: 'center', color: '#3a3a42', padding: '32px 0', fontFamily: 'JetBrains Mono', fontSize: '0.7rem' }}>
                 No data — collector may not be running
               </td>
             </tr>
@@ -120,9 +118,9 @@ export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, 
           {sorted.map(row => {
             const tier = getZScoreTier(row.zScore);
             const isSelected = row.assetId === selectedAssetId;
-            const bpsColor = row.spreadBps !== null
-              ? row.spreadBps > 0 ? 'text-flux-pos' : row.spreadBps < 0 ? 'text-flux-neg' : 'text-text'
-              : 'text-muted';
+            const bpsStyle: React.CSSProperties = row.spreadBps !== null
+              ? { color: row.spreadBps > 0 ? '#22C55E' : row.spreadBps < 0 ? '#EF4444' : '#E8E8EC' }
+              : { color: '#3a3a42' };
 
             const sparkPoints = sparklines.get(row.assetId) ?? [];
 
@@ -130,20 +128,30 @@ export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, 
               <tr
                 key={row.assetId}
                 className={[
-                  'cursor-pointer transition-none',
-                  isSelected ? 'bg-[rgba(255,255,255,0.04)]' : '',
+                  'cursor-pointer',
+                  isSelected ? 'row-selected' : '',
                   row.isFlashing ? 'flash-row' : '',
                 ].join(' ')}
                 onClick={() => onSelectAsset(row.assetId, row.symbol)}
+                style={{ transition: 'background 0.1s ease' }}
               >
                 {/* Symbol */}
                 <td>
-                  <span className="data font-medium text-text text-sm tracking-wide">
-                    {row.symbol}
-                  </span>
-                  {isSelected && (
-                    <span className="ml-2 text-2xs text-muted font-sans">▶</span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{
+                      fontFamily: 'JetBrains Mono',
+                      fontWeight: 500,
+                      color: isSelected ? '#3B82F6' : '#E8E8EC',
+                      fontSize: '0.8125rem',
+                      letterSpacing: '0.04em',
+                      transition: 'color 0.15s ease',
+                    }}>
+                      {row.symbol}
+                    </span>
+                    {isSelected && (
+                      <span style={{ fontSize: '0.55rem', color: '#3B82F6' }}>▶</span>
+                    )}
+                  </div>
                 </td>
 
                 {/* Sparkline */}
@@ -155,23 +163,37 @@ export function SpreadTable({ rows, onSelectAsset, selectedAssetId, sparklines, 
                 </td>
 
                 {/* Type */}
-                <td className="text-muted text-xs font-sans">{row.assetType}</td>
+                <td style={{ fontFamily: 'Inter, sans-serif', color: '#5A5A65', fontSize: '0.72rem' }}>
+                  {row.assetType}
+                </td>
 
                 {/* Exchange */}
-                <td className="text-muted text-xs font-sans">{row.exchange}</td>
+                <td>
+                  <span style={{
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#3a3a42',
+                    fontSize: '0.65rem',
+                    border: '1px solid #1e1e24',
+                    padding: '1px 5px',
+                    borderRadius: 3,
+                    letterSpacing: '0.04em',
+                  }}>
+                    {row.exchange}
+                  </span>
+                </td>
 
                 {/* Spread bps */}
-                <td className={`data text-sm ${bpsColor}`}>
+                <td style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8125rem', ...bpsStyle }}>
                   {formatBps(row.spreadBps)}
                 </td>
 
                 {/* Z-Score */}
-                <td className={`data text-sm ${TIER_STYLES[tier]}`}>
+                <td style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8125rem', ...TIER_STYLES[tier] }}>
                   {formatZ(row.zScore)}
                 </td>
 
-                {/* Last updated — re-evaluates on every render (tick prop causes this) */}
-                <td className="data text-xs text-muted">
+                {/* Last updated */}
+                <td style={{ fontFamily: 'JetBrains Mono', fontSize: '0.65rem', color: '#3a3a42' }}>
                   {relativeTime(row.capturedAt)}
                 </td>
               </tr>

@@ -120,13 +120,16 @@ function ChartTooltip({
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: '#141417', border: '1px solid #252529',
-      borderRadius: 2, padding: '5px 9px',
+      background: '#0D0D0F',
+      border: `1px solid ${color}40`,
+      borderRadius: 6,
+      padding: '6px 11px',
+      boxShadow: `0 0 12px ${color}20`,
     }}>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#5A5A65' }}>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#5A5A65', marginBottom: 2 }}>
         {label}
       </div>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color }}>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color, fontWeight: 600 }}>
         ₹{fmtINR(payload[0].value)}
       </div>
     </div>
@@ -209,25 +212,40 @@ export function NiftyChart() {
 
       {/* ── Stats bar ────────────────────────────────────────────────────── */}
       <div style={{
-        height: 28, flexShrink: 0, display: 'flex', alignItems: 'center',
-        gap: 10, padding: '0 12px', borderBottom: '1px solid #1a1a1e',
+        height: 36,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '0 14px',
+        borderBottom: '1px solid #1a1a1e',
+        background: 'linear-gradient(90deg, #0D0D0F 0%, #111115 100%)',
       }}>
         {price !== null && (
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: '#E8E8EC' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#E8E8EC' }}>
             ₹{fmtINR(price)}
           </span>
         )}
         {changePct !== null && (
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color }}>
-            {isUp ? '+' : ''}{changePct.toFixed(2)}%
+          <span style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 11,
+            fontWeight: 600,
+            color,
+            background: `${color}15`,
+            padding: '1px 6px',
+            borderRadius: 3,
+            border: `1px solid ${color}30`,
+          }}>
+            {isUp ? '▲' : '▼'} {Math.abs(changePct).toFixed(2)}%
           </span>
         )}
         {prevClose !== null && (
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#5A5A65' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#3a3a42', marginLeft: 4 }}>
             prev ₹{fmtINR(prevClose)}
           </span>
         )}
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#5A5A65', marginLeft: 'auto' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#3a3a42', marginLeft: 'auto' }}>
           {updatedAt?.toLocaleTimeString('en-IN', { hour12: false })} IST
           {loading && ' · refreshing…'}
         </span>
