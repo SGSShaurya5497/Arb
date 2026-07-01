@@ -42,8 +42,18 @@ class Settings(BaseSettings):
     # --- CORS ---
     # Which origins may call the API from a browser.
     # Pydantic-settings parses this as a JSON array from the env var, e.g.:
-    #   CORS_ORIGINS='["http://localhost:5173","https://arb.example.com"]'
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+    #   CORS_ORIGINS='["http://localhost:5173","https://arb-yourapp.vercel.app"]'
+    #
+    # DEPLOYMENT: After you deploy to Vercel and get your real URL, update the
+    # CORS_ORIGINS env var in Railway to include that URL.  Replace the
+    # placeholder below (arb-placeholder) with your actual Vercel subdomain.
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:3000",
+        # TODO: replace with your actual Vercel URL after Step 3 deployment
+        "https://arb-placeholder.vercel.app",
+    ]
 
     class Config:
         env_file = ".env"

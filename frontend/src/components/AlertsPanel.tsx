@@ -68,7 +68,8 @@ export function AlertsPanel({ authToken, onAuthExpired }: Props) {
 
   const fetchAlerts = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/alerts/?page_size=20', {
+      const apiBase = `${import.meta.env.VITE_API_URL ?? ''}/api/v1`;
+      const res = await fetch(`${apiBase}/alerts/?page_size=20`, {
         headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
       });
       if (res.status === 401) { onAuthExpired(); return; }

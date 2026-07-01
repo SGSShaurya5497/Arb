@@ -89,21 +89,21 @@ ETF_REGISTRY = {
     },
     "BANKBEES": {
         "yf_symbol":  "BANKBEES.NS",
-        "mfapi_code": "120503",          # Nippon India ETF Bank BeES
+        "mfapi_code": "140087",          # Nippon India ETF Nifty Bank BeES
         "exchange":   "NSE",
         "name":       "Nippon India ETF Bank BeES",
         "asset_type": "ETF",
     },
     "GOLDBEES": {
         "yf_symbol":  "GOLDBEES.NS",
-        "mfapi_code": "104698",          # Nippon India ETF Gold BeES
+        "mfapi_code": "140088",          # Nippon India ETF Gold BeES
         "exchange":   "NSE",
         "name":       "Nippon India ETF Gold BeES",
         "asset_type": "ETF",
     },
     "CPSEETF": {
         "yf_symbol":  "CPSEETF.NS",
-        "mfapi_code": "135798",          # Nippon India ETF CPSE
+        "mfapi_code": "140107",          # Nippon India ETF CPSE
         "exchange":   "NSE",
         "name":       "Nippon India ETF CPSE",
         "asset_type": "ETF",

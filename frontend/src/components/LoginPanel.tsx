@@ -15,9 +15,10 @@ export function LoginPanel({ onLogin }: Props) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const authBase = `${import.meta.env.VITE_API_URL ?? ''}/auth`;
     try {
       if (isRegister) {
-        const regRes = await fetch('/auth/register', {
+        const regRes = await fetch(`${authBase}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
@@ -29,7 +30,7 @@ export function LoginPanel({ onLogin }: Props) {
       }
 
       const form = new URLSearchParams({ username: email, password });
-      const res = await fetch('/auth/token', {
+      const res = await fetch(`${authBase}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: form.toString(),

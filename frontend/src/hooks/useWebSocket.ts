@@ -39,10 +39,12 @@ export function useWebSocket({ onMessage, onStatusChange }: UseWebSocketOptions)
   const connect = useCallback(() => {
     if (destroyedRef.current) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    // In development: Vite proxies /ws → localhost:8000
-    // In production: same-origin
-    const url = `${protocol}://${window.location.host}/ws/spreads`;
+    // In production: VITE_WS_URL = wss://your-railway-backend.railway.app
+    // In dev: fall back to same-origin so Vite proxy handles /ws → localhost:8000
+    const wsBase = import.meta.env.VITE_WS_URL
+      ? import.meta.env.VITE_WS_URL
+      : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
+    const url = `${wsBase}/ws/spreads`;
 
     onStatusRef.current?.('connecting');
     const ws = new WebSocket(url);

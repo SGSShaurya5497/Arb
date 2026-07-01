@@ -10,8 +10,9 @@ import type {
 import { useWebSocket } from './useWebSocket';
 
 // ─── API base ─────────────────────────────────────────────────────────────────
-// In dev, Vite proxies /api → localhost:8000 (configured in vite.config.ts)
-const API = '/api/v1';
+// In production: VITE_API_URL = https://your-railway-backend.railway.app
+// In dev: empty string → Vite proxy forwards /api → localhost:8000
+const API = `${import.meta.env.VITE_API_URL ?? ''}/api/v1`;
 
 // How long (ms) a row keeps the .flash-row class — must match the CSS keyframe
 const FLASH_DURATION_MS = 320;
