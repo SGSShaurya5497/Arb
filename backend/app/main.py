@@ -21,7 +21,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.api import alerts, auth, spreads, ws
 from app.api.spreads import limiter   # single shared Limiter instance
 from app.core.config import settings
-from app.core.database import engine, SessionLocal
+from app.core.database import engine, SessionLocal, Base
 from app.models.assets import Asset
 
 # ETF_REGISTRY is the single source of truth for tracked instruments.
@@ -83,6 +83,17 @@ app.include_router(ws.router)   # WebSocket: /ws/spreads
 # On shutdown, FastAPI cancels all background tasks automatically.
 # ---------------------------------------------------------------------------
 @app.on_event("startup")
+async def create_tables():
+    """
+    Creates all tables defined in the SQLAlchemy models.
+    
+    This must run BEFORE seed_assets() so the assets table exists.
+    """
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created/verified")
+
+
+@app.on_event("startup")
 async def seed_assets():
     """
     Ensures every ETF in ETF_REGISTRY has a row in the assets table.
@@ -135,3 +146,4 @@ def health():
     with engine.connect() as _conn:
         pass
     return {"status": "healthy"}
+
