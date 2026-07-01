@@ -156,9 +156,15 @@ export default function App() {
         </div>
 
         <span style={{ color: '#252529', margin: '0 4px' }}>│</span>
-        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a42', marginRight: 16 }}>
-          Real-time Arbitrage Monitor
-        </span>
+        <div style={{ display: 'flex', alignItems: 'stretch', height: '100%', marginLeft: 12, marginRight: 16 }}>
+          <button className="nav-tab" style={{ color: '#E8E8EC', borderBottomColor: '#3B82F6' }}>
+            Dashboard
+          </button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: '/learn' }))} className="nav-tab">
+            Learn
+          </button>
+        </div>
+        <span style={{ color: '#252529', margin: '0 12px 0 0' }}>│</span>
 
         {/* Nav tabs */}
         <div style={{ display: 'flex', alignItems: 'stretch', height: '100%', marginLeft: 4 }}>
