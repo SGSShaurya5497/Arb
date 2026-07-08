@@ -20,7 +20,7 @@
 
 ## 🧭 What Is This?
 
-Indian ETFs trade on the NSE at a **market price**, but each one also has a **NAV** (Net Asset Value) — the true value of the assets it holds. These two numbers should track each other almost perfectly. But liquidity crunches, heavy order flow, or breaking news can pull them apart for a moment.
+Indian ETFs trade in the NSE at a **market price**, but each one also has a **NAV** (Net Asset Value) — the true value of the assets it holds. These two numbers should track each other almost perfectly. But liquidity crunches, heavy order flow, or breaking news can pull them apart for a moment.
 
 That gap is the **spread** — and it's a real, measurable, exploitable arbitrage signal.
 
